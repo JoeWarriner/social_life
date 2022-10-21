@@ -40,4 +40,32 @@ router.post('/', async(req, res) => {
 )
 
 
+router.patch('/:postId', async(req, res) => {
+    console.log(req.body)
+    try{
+        const updatePostbyID = await WallPost.updateOne(
+            {_id:req.params.postId},
+            {$set:{
+                user:req.body.user,
+                post_text:req.body.post_text
+            }}
+        )
+        res.send(updatePostbyID)
+    }catch(err){
+        res.send({message:err})
+    }
+})
+
+
+router.delete('/:postId', async(req, res) => {
+    console.log(`Received delete request for wall post with id: ${req.params.postId}`)
+    try{
+        const deletePostbyID = await WallPost.deleteOne({_id:req.params.postId})
+        res.send(deletePostbyID)
+    }catch(err){
+        res.send({message:err})
+    }
+})
+
+
 module.exports = router
