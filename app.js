@@ -4,8 +4,10 @@ const app = express()
 const mongoose = require('mongoose')
 require('dotenv/config')
 
+const bodyParser = require('body-parser')
 const wallRouter = require('./routes/wall_post')
 
+app.use(bodyParser.json())
 app.use('/wall_post', wallRouter)
 
 app.get('/', (req, res) => {
