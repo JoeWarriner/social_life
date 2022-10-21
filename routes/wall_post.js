@@ -6,4 +6,10 @@ router.get('/', (req, res) => {
     console.log('A user has accessed the wall post page.')
 })
 
+router.post('/', async(req, res) => {
+    console.log(req.body)
+    res.send('It arrived!')
+}
+)
+
 module.exports = router
