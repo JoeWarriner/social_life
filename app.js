@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 
 const mongoose = require('mongoose')
+require('dotenv/config')
 
 const wallRouter = require('./routes/wall_post')
 
@@ -12,8 +13,10 @@ app.get('/', (req, res) => {
     console.log('Someone accessed the app')
 })
 
+mongoose.connect(process.env.MONGO_DB_URL, () =>
+    console.log('Database connected successfully.'))
+
 app.listen(3000, () => {
     console.log('App is running')
 })
-
 
