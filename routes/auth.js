@@ -47,7 +47,7 @@ router.post('/login', async(req,res) => {
     const webToken = jsonwebtoken.sign({_id:user._id}, process.env.WEBTOKEN_SECRET)
     return res.header('auth_token',webToken).send({'auth_token':webToken})
 
-    
+
 })
 
 module.exports = router

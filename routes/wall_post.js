@@ -1,9 +1,11 @@
 const express = require('express')
 const router = express.Router()
 
+const verifyWebToken = require('../verifyToken')
 const WallPost = require('../models/WallPost')
 
-router.get('/', async(req, res) => {
+
+router.get('/', verifyWebToken, async(req, res) => {
     console.log('Received get request for wall post list.')
     try{
         const wallPostList = await WallPost.find()
@@ -13,7 +15,7 @@ router.get('/', async(req, res) => {
     }
 })
 
-router.get('/:postId', async(req, res) => {
+router.get('/:postId',verifyWebToken, async(req, res) => {
     console.log(`Received get request for wall post with id: ${req.params.postId}`)
     try{
         const wallPost = await WallPost.findById(req.params.postId)
@@ -24,7 +26,7 @@ router.get('/:postId', async(req, res) => {
 })
 
 
-router.post('/', async(req, res) => {
+router.post('/',verifyWebToken, async(req, res) => {
     console.log(req.body)
     const wallPostData = new WallPost({
         user:req.body.user,
@@ -39,8 +41,7 @@ router.post('/', async(req, res) => {
 }
 )
 
-
-router.patch('/:postId', async(req, res) => {
+router.patch('/:postId',verifyWebToken, async(req, res) => {
     console.log(req.body)
     try{
         const updatePostbyID = await WallPost.updateOne(
@@ -56,8 +57,7 @@ router.patch('/:postId', async(req, res) => {
     }
 })
 
-
-router.delete('/:postId', async(req, res) => {
+router.delete('/:postId',verifyWebToken, async(req, res) => {
     console.log(`Received delete request for wall post with id: ${req.params.postId}`)
     try{
         const deletePostbyID = await WallPost.deleteOne({_id:req.params.postId})
@@ -66,6 +66,5 @@ router.delete('/:postId', async(req, res) => {
         res.send({message:err})
     }
 })
-
 
 module.exports = router
