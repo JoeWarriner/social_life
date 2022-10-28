@@ -4,6 +4,8 @@ const router = express.Router()
 const User = require('../models/User')
 
 const bcryptjs = require('bcryptjs')
+const jsonwebtoken = require('jsonwebtoken')
+
 
 router.post('/register', async(req,res) => {
     
@@ -41,7 +43,10 @@ router.post('/login', async(req,res) => {
     if (!passwordValid) {
         return res.status(400).send({'message': 'Incorrect password'})
     }
-    return res.send('PASSWORD ACCEPTED')
+
+    const webToken = jsonwebtoken.sign({_id:user._id}, process.env.WEBTOKEN_SECRET)
+    return res.header('auth_token',webToken).send({'auth_token':webToken})
+
     
 })
 
