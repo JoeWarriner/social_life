@@ -7,10 +7,12 @@ require('dotenv/config')
 const bodyParser = require('body-parser')
 const wallRouter = require('./routes/wall_post')
 const authRouter = require('./routes/auth')
+const friendsRouter = require('./routes/friends')
 
 app.use(bodyParser.json())
 app.use('/wall_post', wallRouter)
 app.use('/auth', authRouter)
+app.use('/friends', friendsRouter)
 
 app.get('/', (req, res) => {
     res.send('Hi there welcome to my app')

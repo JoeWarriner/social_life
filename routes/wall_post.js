@@ -38,8 +38,7 @@ router.post('/',verifyWebToken, async(req, res) => {
     }catch(err){
         res.send({message:err})
     }
-}
-)
+})
 
 router.patch('/:postId',verifyWebToken, async(req, res) => {
     console.log(req.body)

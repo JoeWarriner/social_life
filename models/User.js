@@ -16,7 +16,8 @@ const userSchema = mongoose.Schema({
     password: {
         type:String,
         required:true
-    }
+    },
+    friends: [String]
 })
 
 module.exports = mongoose.model('User', userSchema)
