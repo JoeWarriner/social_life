@@ -3,15 +3,20 @@ const router = express.Router()
 
 const User = require('../models/User')
 
+const bcryptjs = require('bcryptjs')
+
 router.post('/register', async(req,res) => {
     
     // Validation stuff
+
+    const salt = await bcryptjs.genSalt(5)
+    const hashedPassword = await bcryptjs.hash(req.body.password, salt)
 
     const user = new User({
         first_name : req.body.first_name,
         surname : req.body.surname,
         email : req.body.email,
-        password : req.body.password
+        password : hashedPassword
     })
     try {
         const newUser = await user.save()
@@ -31,11 +36,12 @@ router.post('/login', async(req,res) => {
         return res.status(400).send({'message': 'user does not exist'})
     }
 
-    if (user.password == req.body.password){
-        return res.send('ACCEPTED')
-    } else {
-        return res.send('DENIED')
+    const passwordValid = await bcryptjs.compare(req.body.password, user.password)
+
+    if (!passwordValid) {
+        return res.status(400).send({'message': 'Incorrect password'})
     }
+    return res.send('PASSWORD ACCEPTED')
     
 })
 
