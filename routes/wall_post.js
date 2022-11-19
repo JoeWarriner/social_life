@@ -28,6 +28,7 @@ router.get('/:postId',verifyWebToken, async(req, res) => {
 
 
 router.post('/',verifyWebToken, async(req, res) => {
+    console.log('New wall post received.')
     console.log(req.body)
     const wallPostData = new WallPost({
         owner:req.user,
@@ -42,6 +43,21 @@ router.post('/',verifyWebToken, async(req, res) => {
     }
 })
 
+
+router.patch('/add_comment', verifyWebToken, async(req, res) => {
+    console.log('Comment added')
+    console.log(req.body)
+    try{
+        postToUpdate = await WallPost.findById(req.body.postId)
+        postToUpdate.comments.push({owner_id: req.user, timestamp: Date.now(), comment: req.body.comment})
+        const updatedPost = await postToUpdate.save()
+        res.send(updatedPost)
+    }catch(err){
+        console.log('HI THERE I HAVE THROWN AN ERROR')
+        console.log(err)
+        res.status(400).send({message:err})
+    }
+})
 
 router.patch('/:postId',verifyWebToken, async(req, res) => {
     console.log(req.body)

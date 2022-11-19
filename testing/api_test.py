@@ -18,7 +18,9 @@ client = pymongo.MongoClient(config.get('MONGO_DB_URL'))
 BASE_URL = 'http://localhost:3000/'
 REGISTER_URL = BASE_URL + 'auth/register'
 LOGIN_URL = BASE_URL + 'auth/login'
+
 BASIC_WALL_POST = BASE_URL + 'wall_post/'
+ADD_COMMENT = BASIC_WALL_POST + 'add_comment/'
 
 
 # Clear database before each testing round:
@@ -74,22 +76,42 @@ class User:
             headers = {'auth-token': self.token}
             )
         assert response.ok
-        assert response.json()['title'] == title
-        assert response.json()['text'] == text
-        assert response.json()['owner'] == self.id
-        assert response.json()['timestamp'] is not None
-        assert response.json()['comments'] == []
-        assert response.json()['likes'] == 0
+        post = response.json()
+        assert post['title'] == title
+        assert post['text'] == text
+        assert post['owner'] == self.id
+        assert post['timestamp'] is not None
+        assert post['comments'] == []
+        assert post['likes'] == 0
+        self.post_id = post['_id']
 
     def browse_posts(self, expected_order = []):
         response = requests.get(
             BASIC_WALL_POST,
             headers = {'auth-token': self.token}
             )
-    
         posts =  response.json()
         titles = [post['title'] for post in posts]
         assert titles == expected_order
+    
+    def add_comment(self, post_id, comment, expected_comment_number):
+        response = requests.patch(
+            ADD_COMMENT,
+            json = {
+                'postId': post_id,
+                'comment' : comment
+            },
+            headers = {'auth-token': self.token}
+        )
+        print(response)
+        assert response.ok
+        updated_post = response.json()
+        assert updated_post['_id'] == post_id
+        assert updated_post['comments'][expected_comment_number]['comment'] == comment
+        assert updated_post['comments'][expected_comment_number]['owner_id'] == self.id
+        
+        
+
        
 
 olga = User('olga01', 'olga_pass')
@@ -130,7 +152,7 @@ def test_tc5():
 
 def test_tc6():
     """Mary posts a text using her token. """
-    nick.make_post("Mary's post", "HUMANS NEED FANTASY TO BE HUMAN. TO BE THE PLACE WHERE THE FALLING ANGEL MEETS THE RISING APE.")
+    mary.make_post("Mary's post", "HUMANS NEED FANTASY TO BE HUMAN. TO BE THE PLACE WHERE THE FALLING ANGEL MEETS THE RISING APE.")
 
 def test_tc7():
     """Nick and Olga browse available posts in chronological order in the MiniWall; 
@@ -138,9 +160,21 @@ def test_tc7():
     nick.browse_posts(expected_order=["Olga's post","Nick's post", "Mary's post" ])
     olga.browse_posts(expected_order=["Olga's post","Nick's post", "Mary's post" ])
 
-# def test_tc8():
-#     """Nick and Olga comment Mary's post in a round-robin fashion (one after the other)."""
-#     pass
+def test_tc8():
+    """Nick and Olga comment Mary's post in a round-robin fashion (one after the other)."""
+    nick.add_comment(
+        post_id = mary.post_id, 
+        comment = 'Mary - why is this all in capitals?',
+        expected_comment_number=0)
+
+    olga.add_comment(
+        post_id = mary.post_id,
+        comment = """ 
+            It's a quote from the character Death in Terry Pratchett's Disworld - he always speaks in capitals.
+            Also why did you ask Mary? You know she can't reply to her own comment! 
+            This is a stupid social network, I'm moving to mastodon.
+            """,
+        expected_comment_number=1)
 
 # def test_tc9():
 #     """Mary comments her post. This call should be unsuccessful; an owner cannot comment owned posts. """
