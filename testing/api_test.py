@@ -194,25 +194,25 @@ def test_tc10():
     """ Mary can see posts in a chronological order (newest posts are on the top as there are no likes yet). """
     pass
 
-def test_tc1():
-    """ Mary can see the comments for her posts. """
-    pass
+# def test_tc1():
+#     """ Mary can see the comments for her posts. """
+#     pass
 
-def test_tc1():
-    """ Nick and Olga like Mary's posts"""
-    pass
+# def test_tc1():
+#     """ Nick and Olga like Mary's posts"""
+#     pass
 
-def test_tc1():
-    """ Mary likes her posts. This call should be unsuccessful; an owner cannot like their posts. """
-    pass
+# def test_tc1():
+#     """ Mary likes her posts. This call should be unsuccessful; an owner cannot like their posts. """
+#     pass
 
-def test_tc1():
-    """ Mary can see that there are two likes in her posts. """
-    pass
+# def test_tc1():
+#     """ Mary can see that there are two likes in her posts. """
+#     pass
 
-def test_tc1():
-    """ Nick can see the list of posts, since Mary's post has two likes it is shown at the top."""
-    pass
+# def test_tc1():
+#     """ Nick can see the list of posts, since Mary's post has two likes it is shown at the top."""
+#     pass
 
 
 

@@ -57,13 +57,15 @@ router.patch('/add_comment', verifyWebToken, async(req, res) => {
     if (postToUpdate.owner == req.user._id){
         res.status(401).send('Users cannot comment on their own posts.')
     }
-    try{
-        postToUpdate.comments.push({owner_id: req.user, timestamp: Date.now(), comment: req.body.comment})
-        const updatedPost = await postToUpdate.save()
-        res.send(updatedPost)
-    }catch(err){
-        console.log(err)
-        res.status(400).send({message:err})
+    else{
+        try{
+            postToUpdate.comments.push({owner_id: req.user, timestamp: Date.now(), comment: req.body.comment})
+            const updatedPost = await postToUpdate.save()
+            res.send(updatedPost)
+        }catch(err){
+            console.log(err)
+            res.status(400).send({message:err})
+        }
     }
 })
 
