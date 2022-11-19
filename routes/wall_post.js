@@ -15,6 +15,21 @@ router.get('/', verifyWebToken, async(req, res) => {
     }
 })
 
+router.get('/comment', verifyWebToken, async(req, res) => {
+    console.log('Received get request for user comments')
+    try{
+        let comments_list = []
+        const wallPostList = await WallPost.find({owner: req.user._id})
+        for (const post of wallPostList){
+            console.log(post.comments)
+            comments_list = comments_list.concat(post.comments)
+            console.log(comments_list)
+        }
+        res.send(comments_list)
+    }catch(err){
+        res.status(400).send({message:err})
+    }
+})
 
 router.get('/:postId',verifyWebToken, async(req, res) => {
     console.log(`Received get request for wall post with id: ${req.params.postId}`)
@@ -44,7 +59,7 @@ router.post('/',verifyWebToken, async(req, res) => {
 })
 
 
-router.patch('/add_comment', verifyWebToken, async(req, res) => {
+router.post('/comment', verifyWebToken, async(req, res) => {
     console.log(req.body)
     try{
         postToUpdate = await WallPost.findById(req.body.postId)

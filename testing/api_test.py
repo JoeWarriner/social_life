@@ -20,7 +20,7 @@ REGISTER_URL = BASE_URL + 'auth/register'
 LOGIN_URL = BASE_URL + 'auth/login'
 
 BASIC_WALL_POST = BASE_URL + 'wall_post/'
-ADD_COMMENT = BASIC_WALL_POST + 'add_comment/'
+ADD_COMMENT = BASIC_WALL_POST + 'comment/'
 
 
 # Clear database before each testing round:
@@ -95,7 +95,7 @@ class User:
         assert titles == expected_order
     
     def add_comment(self, post_id, comment, expected_comment_number = None, access_expected = True):
-        response = requests.patch(
+        response = requests.post(
             ADD_COMMENT,
             json = {
                 'postId': post_id,
@@ -113,6 +113,16 @@ class User:
             assert not response.ok
         
         
+    def view_user_comments(self, expected_commenters):
+        response = requests.get(
+            ADD_COMMENT,
+            headers = {'auth-token': self.token}
+        )
+        assert response.ok
+        comments = response.json()
+        print(comments)
+        assert comments[0]['owner_id'] == expected_commenters[0]
+        assert comments[1]['owner_id'] == expected_commenters[1]
 
        
 
@@ -192,11 +202,15 @@ def test_tc9():
 
 def test_tc10():
     """ Mary can see posts in a chronological order (newest posts are on the top as there are no likes yet). """
-    pass
+    mary.browse_posts(expected_order=["Olga's post","Nick's post", "Mary's post" ])
 
-# def test_tc1():
-#     """ Mary can see the comments for her posts. """
-#     pass
+def test_tc11():
+    """ Mary can see the comments for her posts. """
+    expected_commenters = {
+        0 : nick.id,
+        1: olga.id
+    }
+    mary.view_user_comments(expected_commenters = expected_commenters)
 
 # def test_tc1():
 #     """ Nick and Olga like Mary's posts"""
