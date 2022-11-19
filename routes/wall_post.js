@@ -15,6 +15,7 @@ router.get('/', verifyWebToken, async(req, res) => {
     }
 })
 
+
 router.get('/:postId',verifyWebToken, async(req, res) => {
     console.log(`Received get request for wall post with id: ${req.params.postId}`)
     try{
@@ -29,8 +30,9 @@ router.get('/:postId',verifyWebToken, async(req, res) => {
 router.post('/',verifyWebToken, async(req, res) => {
     console.log(req.body)
     const wallPostData = new WallPost({
-        user:req.body.user,
-        post_text: req.body.post_text
+        owner:req.user,
+        text:req.body.text,
+        title:req.body.title
     })
     try{
         const newPost = await wallPostData.save()

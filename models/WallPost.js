@@ -1,17 +1,31 @@
 const mongoose = require('mongoose')
 
 const wallPostSchema = mongoose.Schema({
-    user: {
+    owner: {
         type:String,
         required:true
     },
-    post_text: {
+    title: {
+        type:String,
+        required:true
+    },
+    text: {
         type:String,
         required: true
     },
-    date: {
+    timestamp: {
         type:Date,
         default:Date.now
+    },
+    comments: [{
+        owner_id: String,
+        timestamp: Date,
+        comment: String
+        }
+    ],
+    likes: {
+        type:Number,
+        default:0
     }
 })
 

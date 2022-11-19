@@ -5,7 +5,14 @@ from pathlib import Path
 import decouple
 import pymongo
 
-config = decouple.Config(decouple.RepositoryEnv(Path.cwd().parent.absolute().joinpath('.env')))
+try:
+    config = decouple.Config(decouple.RepositoryEnv(Path.cwd().joinpath('.env')))
+except FileNotFoundError as error:
+    print('ERROR: Test script needs to be run fom same directory as .env')
+    raise error
+    
+    
+
 client = pymongo.MongoClient(config.get('MONGO_DB_URL'))
 
 BASE_URL = 'http://localhost:3000/'
@@ -36,6 +43,7 @@ class User:
         assert response.ok
         assert response.json()['username'] == self.username
         assert response.json()['password'] != self.password
+        self.id = response.json()['_id']
     
 
     def get_token(self):
@@ -66,7 +74,12 @@ class User:
             headers = {'auth-token': self.token}
             )
         assert response.ok
-
+        assert response.json()['title'] == title
+        assert response.json()['text'] == text
+        assert response.json()['owner'] == self.id
+        assert response.json()['timestamp'] is not None
+        assert response.json()['comments'] == []
+        assert response.json()['likes'] == 0
 
 
 olga = User('olga01', 'olga_pass')
@@ -99,7 +112,7 @@ def test_tc3():
 def test_tc4():
     """Olga posts a text using her token. """
     olga.make_post("Olga's post", "Hi - I'm Olga")
-
+    
 # def test_tc5():
 #     """Nick posts a text using his token. """
 #     pass
