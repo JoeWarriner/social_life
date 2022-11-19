@@ -8,12 +8,15 @@ const WallPost = require('../models/WallPost')
 router.get('/', verifyWebToken, async(req, res) => {
     console.log('Received get request for wall post list.')
     try{
-        const wallPostList = await WallPost.find()
+        const wallPostList = await WallPost.find({}, null, {sort: {likes: -1}})
+        console.log(wallPostList)
         res.send(wallPostList)
     }catch(err){
+        console.log(err)
         res.status(400).send({message:err})
     }
 })
+
 
 router.get('/comment_like_summary', verifyWebToken, async(req, res) => {
     console.log('Received get request for user comments')
@@ -37,7 +40,6 @@ router.get('/comment_like_summary', verifyWebToken, async(req, res) => {
 })
 
 
-
 router.get('/:postId',verifyWebToken, async(req, res) => {
     console.log(`Received get request for wall post with id: ${req.params.postId}`)
     try{
@@ -47,9 +49,6 @@ router.get('/:postId',verifyWebToken, async(req, res) => {
         res.status(400).send({message:err})
     }
 })
-
-
-
 
 
 router.post('/',verifyWebToken, async(req, res) => {

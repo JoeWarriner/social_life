@@ -1,6 +1,5 @@
 import pytest
 import requests
-import json
 from pathlib import Path
 import decouple
 import pymongo
@@ -91,6 +90,7 @@ class User:
             BASIC_WALL_POST,
             headers = {'auth-token': self.token}
             )
+        assert response.ok
         posts =  response.json()
         titles = [post['title'] for post in posts]
         assert titles == expected_order
@@ -253,6 +253,8 @@ def test_tc14():
     """ Mary can see that there are two likes in her posts. """
     mary.get_user_likes(expected_likes=2)
 
-# def test_tc15():
-#     """ Nick can see the list of posts, since Mary's post has two likes it is shown at the top."""
-#     pass
+
+def test_tc15():
+    """ Nick can see the list of posts, since Mary's post has two likes it is shown at the top."""
+    nick.browse_posts(expected_order=["Mary's post", "Olga's post","Nick's post" ])
+
