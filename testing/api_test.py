@@ -21,7 +21,8 @@ LOGIN_URL = BASE_URL + 'auth/login'
 
 BASIC_WALL_POST = BASE_URL + 'wall_post/'
 ADD_COMMENT = BASIC_WALL_POST + 'comment/'
-
+COMMENT_LIKE_SUMMARY = BASIC_WALL_POST + '/comment_like_summary'
+LIKE_POST = BASIC_WALL_POST + 'like/'
 
 # Clear database before each testing round:
 for collection in client.social_life.list_collection_names():
@@ -115,16 +116,42 @@ class User:
         
     def view_user_comments(self, expected_commenters):
         response = requests.get(
-            ADD_COMMENT,
+            COMMENT_LIKE_SUMMARY,
             headers = {'auth-token': self.token}
         )
         assert response.ok
-        comments = response.json()
+        comments = response.json()['comments']
         print(comments)
         assert comments[0]['owner_id'] == expected_commenters[0]
         assert comments[1]['owner_id'] == expected_commenters[1]
+    
 
-       
+    def get_user_likes(self, expected_likes):
+        response = requests.get(
+            COMMENT_LIKE_SUMMARY,
+            headers = {'auth-token': self.token}
+        )
+        assert response.ok
+        assert response.json()['likes'] == expected_likes
+
+        
+    def like_post(self, post_id, expected_likes = None, access_expected = True):
+        response = requests.post(
+            LIKE_POST,
+            json = {
+                'postId':  post_id
+            },
+            headers = {'auth-token': self.token}
+        )
+        if access_expected:
+            assert response.ok
+            post = response.json()
+            assert post['likes'] == expected_likes
+        else:
+            assert not response.ok
+
+    
+
 
 olga = User('olga01', 'olga_pass')
 nick = User('nick01', 'nick_pass')
@@ -212,51 +239,20 @@ def test_tc11():
     }
     mary.view_user_comments(expected_commenters = expected_commenters)
 
-# def test_tc1():
-#     """ Nick and Olga like Mary's posts"""
-#     pass
+def test_tc12():
+    """ Nick and Olga like Mary's posts"""
+    nick.like_post(mary.post_id, expected_likes=1)
+    olga.like_post(mary.post_id, expected_likes=2)
 
-# def test_tc1():
-#     """ Mary likes her posts. This call should be unsuccessful; an owner cannot like their posts. """
-#     pass
+def test_tc13():
+    """ Mary likes her posts. This call should be unsuccessful; an owner cannot like their posts. """
+    mary.like_post(mary.post_id, access_expected=False)
 
-# def test_tc1():
-#     """ Mary can see that there are two likes in her posts. """
-#     pass
 
-# def test_tc1():
+def test_tc14():
+    """ Mary can see that there are two likes in her posts. """
+    mary.get_user_likes(expected_likes=2)
+
+# def test_tc15():
 #     """ Nick can see the list of posts, since Mary's post has two likes it is shown at the top."""
 #     pass
-
-
-
-# # Other tests:
-
-# # def setup_testing():
-    
-# #     return olga, nick, mary
-
-
-
-    
-
-
-# # @pytest.fixture
-# # def authorise_tokens():
-
-
-
-# # @pytest.fixture()
-# # def teardown():
-# #     '''Wipe database after each test'''
-# #     yield
-# #     for collection in client.social_life.list_collection_names():
-# #             client.social_life.drop_collection(collection)
-
-
-
-    
-
-    
-
-
