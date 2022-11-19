@@ -10,14 +10,12 @@ const jsonwebtoken = require('jsonwebtoken')
 router.post('/register', async(req,res) => {
     
     // Validation stuff
-
+    console.log(req.body)
     const salt = await bcryptjs.genSalt(5)
     const hashedPassword = await bcryptjs.hash(req.body.password, salt)
 
     const user = new User({
-        first_name : req.body.first_name,
-        surname : req.body.surname,
-        email : req.body.email,
+        username : req.body.username,
         password : hashedPassword
     })
     try {
@@ -32,7 +30,7 @@ router.post('/register', async(req,res) => {
 
 router.post('/login', async(req,res) => {
 
-    const user = await User.findOne({email:req.body.email})
+    const user = await User.findOne({username:req.body.username})
 
     if (!user) {
         return res.status(400).send({'message': 'user does not exist'})
@@ -46,8 +44,6 @@ router.post('/login', async(req,res) => {
 
     const webToken = jsonwebtoken.sign({_id:user._id}, process.env.WEBTOKEN_SECRET)
     return res.header('auth_token',webToken).send({'auth_token':webToken})
-
-
 })
 
 module.exports = router

@@ -11,7 +11,7 @@ router.get('/', verifyWebToken, async(req, res) => {
         const wallPostList = await WallPost.find()
         res.send(wallPostList)
     }catch(err){
-        res.send({message:err})
+        res.status(400).send({message:err})
     }
 })
 
@@ -21,7 +21,7 @@ router.get('/:postId',verifyWebToken, async(req, res) => {
         const wallPost = await WallPost.findById(req.params.postId)
         res.send(wallPost)
     }catch(err){
-        res.send({message:err})
+        res.status(400).send({message:err})
     }
 })
 
@@ -36,9 +36,10 @@ router.post('/',verifyWebToken, async(req, res) => {
         const newPost = await wallPostData.save()
         res.send(newPost)
     }catch(err){
-        res.send({message:err})
+        res.status(400).send({message:err})
     }
 })
+
 
 router.patch('/:postId',verifyWebToken, async(req, res) => {
     console.log(req.body)
@@ -52,7 +53,7 @@ router.patch('/:postId',verifyWebToken, async(req, res) => {
         )
         res.send(updatePostbyID)
     }catch(err){
-        res.send({message:err})
+        res.status(400).send({message:err})
     }
 })
 
@@ -62,7 +63,7 @@ router.delete('/:postId',verifyWebToken, async(req, res) => {
         const deletePostbyID = await WallPost.deleteOne({_id:req.params.postId})
         res.send(deletePostbyID)
     }catch(err){
-        res.send({message:err})
+        res.status(400).send({message:err})
     }
 })
 

@@ -1,1 +1,4 @@
 .env
+testing/testing_venv
+testing/.pytest_cache
+testing/__pycache__

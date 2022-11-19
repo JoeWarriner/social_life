@@ -6,7 +6,7 @@ function verifyWebToken(req, res, next){
         req.user = verified
         next()
     }catch(err){
-        res.send('Access denied')
+        res.status(401).send('Access denied')
         console.log(err)
     }
 }
