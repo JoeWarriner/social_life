@@ -94,7 +94,7 @@ class User:
         titles = [post['title'] for post in posts]
         assert titles == expected_order
     
-    def add_comment(self, post_id, comment, expected_comment_number):
+    def add_comment(self, post_id, comment, expected_comment_number = None, access_expected = True):
         response = requests.patch(
             ADD_COMMENT,
             json = {
@@ -103,12 +103,14 @@ class User:
             },
             headers = {'auth-token': self.token}
         )
-        print(response)
-        assert response.ok
-        updated_post = response.json()
-        assert updated_post['_id'] == post_id
-        assert updated_post['comments'][expected_comment_number]['comment'] == comment
-        assert updated_post['comments'][expected_comment_number]['owner_id'] == self.id
+        if access_expected:
+            assert response.ok
+            updated_post = response.json()
+            assert updated_post['_id'] == post_id
+            assert updated_post['comments'][expected_comment_number]['comment'] == comment
+            assert updated_post['comments'][expected_comment_number]['owner_id'] == self.id
+        if not access_expected:
+            assert not response.ok
         
         
 
@@ -171,38 +173,46 @@ def test_tc8():
         post_id = mary.post_id,
         comment = """ 
             It's a quote from the character Death in Terry Pratchett's Disworld - he always speaks in capitals.
-            Also why did you ask Mary? You know she can't reply to her own comment! 
+            Also why did you ask Mary? You know she can't reply to her own post! 
             This is a stupid social network, I'm moving to mastodon.
             """,
         expected_comment_number=1)
 
-# def test_tc9():
-#     """Mary comments her post. This call should be unsuccessful; an owner cannot comment owned posts. """
-#     pass
+def test_tc9():
+    """Mary comments her post. This call should be unsuccessful; an owner cannot comment owned posts. """
+    mary.add_comment(
+        post_id = mary.post_id,
+        comment = """ 
+            Actually I CAN reply because the idiot developing this app hasn't coded it in yet, 
+            despite the fact he's writing this test. He said something about "test driven development", 
+            but I think he's just procrastinating by writing stupid conversations between imaginary people.
+            """, 
+            # Test passes - who looks stupid now Mary?
+        access_expected=False)
 
-# def test_tc1():
-#     """ Mary can see posts in a chronological order (newest posts are on the top as there are no likes yet). """
-#     pass
+def test_tc10():
+    """ Mary can see posts in a chronological order (newest posts are on the top as there are no likes yet). """
+    pass
 
-# def test_tc1():
-#     """ Mary can see the comments for her posts. """
-#     pass
+def test_tc1():
+    """ Mary can see the comments for her posts. """
+    pass
 
-# def test_tc1():
-#     """ Nick and Olga like Mary's posts"""
-#     pass
+def test_tc1():
+    """ Nick and Olga like Mary's posts"""
+    pass
 
-# def test_tc1():
-#     """ Mary likes her posts. This call should be unsuccessful; an owner cannot like their posts. """
-#     pass
+def test_tc1():
+    """ Mary likes her posts. This call should be unsuccessful; an owner cannot like their posts. """
+    pass
 
-# def test_tc1():
-#     """ Mary can see that there are two likes in her posts. """
-#     pass
+def test_tc1():
+    """ Mary can see that there are two likes in her posts. """
+    pass
 
-# def test_tc1():
-#     """ Nick can see the list of posts, since Mary's post has two likes it is shown at the top."""
-#     pass
+def test_tc1():
+    """ Nick can see the list of posts, since Mary's post has two likes it is shown at the top."""
+    pass
 
 
 

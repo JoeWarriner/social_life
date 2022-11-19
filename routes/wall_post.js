@@ -45,15 +45,23 @@ router.post('/',verifyWebToken, async(req, res) => {
 
 
 router.patch('/add_comment', verifyWebToken, async(req, res) => {
-    console.log('Comment added')
     console.log(req.body)
     try{
         postToUpdate = await WallPost.findById(req.body.postId)
+    }catch(err){
+        console.log(err)
+        res.status(400).send({message:err})
+    }
+    console.log(postToUpdate.owner)
+    console.log(req.user)
+    if (postToUpdate.owner == req.user._id){
+        res.status(401).send('Users cannot comment on their own posts.')
+    }
+    try{
         postToUpdate.comments.push({owner_id: req.user, timestamp: Date.now(), comment: req.body.comment})
         const updatedPost = await postToUpdate.save()
         res.send(updatedPost)
     }catch(err){
-        console.log('HI THERE I HAVE THROWN AN ERROR')
         console.log(err)
         res.status(400).send({message:err})
     }
@@ -67,7 +75,7 @@ router.patch('/:postId',verifyWebToken, async(req, res) => {
             {$set:{
                 user:req.body.user,
                 post_text:req.body.post_text
-            }}
+            }} 
         )
         res.send(updatePostbyID)
     }catch(err){
