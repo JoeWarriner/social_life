@@ -81,6 +81,16 @@ class User:
         assert response.json()['comments'] == []
         assert response.json()['likes'] == 0
 
+    def browse_posts(self, expected_order = []):
+        response = requests.get(
+            BASIC_WALL_POST,
+            headers = {'auth-token': self.token}
+            )
+    
+        posts =  response.json()
+        titles = [post['title'] for post in posts]
+        assert titles == expected_order
+       
 
 olga = User('olga01', 'olga_pass')
 nick = User('nick01', 'nick_pass')
@@ -106,24 +116,27 @@ def test_tc2():
 
 
 def test_tc3():
-    """Olga calls the API (any endpoint) without using a token. This call should be unsuccessful as the user is unauthorised."""
+    """Olga calls the API (any endpoint) without using a token. 
+    This call should be unsuccessful as the user is unauthorised."""
     olga.call_api_no_token()
 
 def test_tc4():
     """Olga posts a text using her token. """
-    olga.make_post("Olga's post", "Hi - I'm Olga")
+    olga.make_post("Olga's post", "It was a bright, cold day in April and the clocks were striking thirteen...")
     
-# def test_tc5():
-#     """Nick posts a text using his token. """
-#     pass
+def test_tc5():
+    """Nick posts a text using his token. """
+    nick.make_post("Nick's post", "I've seen ... attack ships on fire off the shoulder of Orion ... C-beams glitter in the dark near the Tannhäuser Gate")
 
-# def test_tc6():
-#     """Mary posts a text using her token. """
-#     pass
+def test_tc6():
+    """Mary posts a text using her token. """
+    nick.make_post("Mary's post", "HUMANS NEED FANTASY TO BE HUMAN. TO BE THE PLACE WHERE THE FALLING ANGEL MEETS THE RISING APE.")
 
-# def test_tc7():
-#     """Nick and Olga browse available posts in chronological order in the MiniWall; there should be three posts available. Note, that we don’t have any likes yet. """
-#     pass
+def test_tc7():
+    """Nick and Olga browse available posts in chronological order in the MiniWall; 
+    there should be three posts available. Note, that we don't have any likes yet. """
+    nick.browse_posts(expected_order=["Olga's post","Nick's post", "Mary's post" ])
+    olga.browse_posts(expected_order=["Olga's post","Nick's post", "Mary's post" ])
 
 # def test_tc8():
 #     """Nick and Olga comment Mary's post in a round-robin fashion (one after the other)."""
