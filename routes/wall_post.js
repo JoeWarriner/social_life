@@ -54,12 +54,12 @@ router.get('/:postId',verifyWebToken, async(req, res) => {
 router.post('/',verifyWebToken, async(req, res) => {
     console.log('New wall post received.')
     console.log(req.body)
-    const wallPostData = new WallPost({
-        owner:req.user,
-        text:req.body.text,
-        title:req.body.title
-    })
-    try{
+    try {
+        const wallPostData = new WallPost({
+            owner:req.user,
+            text:req.body.text,
+            title:req.body.title
+        })
         const newPost = await wallPostData.save()
         res.send(newPost)
     }catch(err){

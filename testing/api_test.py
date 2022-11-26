@@ -219,8 +219,7 @@ def test_tc8():
         post_id = mary.post_id,
         comment = """ 
             It's a quote from the character Death in Terry Pratchett's Disworld - he always speaks in capitals.
-            Also why did you ask Mary? You know she can't reply to her own post! 
-            This is a stupid social network, I'm moving to mastodon.
+            Also why did you ask Mary? You know she can't reply to her own post!
             """,
         expected_comment_number=1)
 
@@ -297,23 +296,26 @@ def test_validation_username_unique(clear_db):
 def test_validation_post_length(clear_db):
     ''' Post must be greater than 0, less than 256 characters '''
     test_user_1 = User('test', 'abcdefghi')
+    test_user_1.register()
     test_user_1.get_token()
-    test_user_1.make_post('', expected_response_ok=False)
-    test_user_1.make_post('''
+    test_user_1.make_post('Test', '', expected_response_ok=False)
+    test_user_1.make_post('Test', '''
         This is a post that is too long because it is over 256 characters. 
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do ei
         usmod tempor incididunt ut labore et dolore magna aliqua. Ut enim 
-        ad minim veniam, quis nostrud exercitation ullamco laboris
+        ad minim veniam, quis nostrud exercitation ullamco laboris dolor
         ''', expected_response_ok=False)
 
 def test_validation_comment_length(clear_db):
     ''' Comment must be greater than 0, less than 256 characters '''
 
     test_user_1 = User('test', 'abcdefghi')
+    test_user_1.register()
     test_user_1.get_token()
-    test_user_1.make_post('A test post')
+    test_user_1.make_post('A test post', 'test post')
 
     test_user_2 = User('test2', 'abcdefghi')
+    test_user_2.register()
     test_user_2.get_token()
     test_user_2.add_comment(test_user_1.post_id, '', expected_response_ok=False)
 
@@ -321,7 +323,7 @@ def test_validation_comment_length(clear_db):
         This is a post that is too long because it is over 256 characters. 
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do ei
         usmod tempor incididunt ut labore et dolore magna aliqua. Ut enim 
-        ad minim veniam, quis nostrud exercitation ullamco laboris
+        ad minim veniam, quis nostrud exercitation ullamco laboris dolor
         ''', 
         expected_response_ok=False)
     

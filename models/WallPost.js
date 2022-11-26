@@ -11,7 +11,9 @@ const wallPostSchema = mongoose.Schema({
     },
     text: {
         type:String,
-        required: true
+        required: true,
+        minLength: 1,
+        maxLength: 256,
     },
     timestamp: {
         type:Date,
@@ -20,9 +22,12 @@ const wallPostSchema = mongoose.Schema({
     comments: [{
         owner_id: String,
         timestamp: Date,
-        comment: String
+        comment: {
+            type: String,
+            minLength: 1,
+            maxLength: 256,
         }
-    ],
+    }],
     likes: {
         type:Number,
         default:0
