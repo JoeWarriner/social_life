@@ -7,6 +7,7 @@ const WallPost = require('../../models/WallPost')
 
 const commentRouter = require('./post_routes/comment')
 const likeRouter = require('./post_routes/like')
+const { post } = require('./post_routes/comment')
 
 router.use('/comment', commentRouter)
 router.use('/like', likeRouter)
@@ -14,8 +15,6 @@ router.use('/like', likeRouter)
 
 
 router.post('/',verifyWebToken, async(req, res) => {
-    console.log('New wall post received.')
-    console.log(req.body)
     try {
         const wallPostData = new WallPost({
             owner:req.user,
@@ -31,40 +30,56 @@ router.post('/',verifyWebToken, async(req, res) => {
 
 
 router.get('/:postId',verifyWebToken, async(req, res) => {
-    console.log(`Received get request for wall post with id: ${req.params.postId}`)
     try{
         const wallPost = await WallPost.findById(req.params.postId)
         res.send(wallPost)
     }catch(err){
+        console.log(err)
         res.status(400).send({message:err})
     }
 })
 
 
+async function postBelongsToUser(postId, user_id){
 
-router.patch('/:postId',verifyWebToken, async(req, res) => {
-    console.log(req.body)
+    const post = await WallPost.findById(postId)
+    if (post.owner != user_id ) {return false}
+    return true
+    
+}
+
+router.patch('/:postId', verifyWebToken, async(req, res) => {
     try{
+        if (!(await postBelongsToUser(req.params.postId, req.user._id))){
+            console.log('Accessed denied on patch request.')
+            res.status(401).send('Access denied')
+        }else{
         const updatePostbyID = await WallPost.updateOne(
             {_id:req.params.postId},
             {$set:{
-                user:req.body.user,
-                post_text:req.body.post_text
+                text:req.body.text,
+                title:req.body.title
             }} 
         )
         res.send(updatePostbyID)
+        }
     }catch(err){
+        console.log(err)
         res.status(400).send({message:err})
     }
 })
 
 
-router.delete('/:postId',verifyWebToken, async(req, res) => {
-    console.log(`Received delete request for wall post with id: ${req.params.postId}`)
+router.delete('/:postId', verifyWebToken, async(req, res) => {
     try{
+        if (!(await postBelongsToUser(req.params.postId, req.user._id))){
+            res.status(401).send('Access denied')
+        }else{
         const deletePostbyID = await WallPost.deleteOne({_id:req.params.postId})
         res.send(deletePostbyID)
+        }
     }catch(err){
+        console.log(err)
         res.status(400).send({message:err})
     }
 })

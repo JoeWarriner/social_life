@@ -5,7 +5,6 @@ const WallPost = require('../../../models/WallPost')
 
 
 router.post('/', verifyWebToken, async(req, res) => {
-    console.log(req.body)
     try{
         postToUpdate = await WallPost.findById(req.body.postId)
     }catch(err){
@@ -26,5 +25,7 @@ router.post('/', verifyWebToken, async(req, res) => {
         }
     }
 })
+
+
 
 module.exports = router

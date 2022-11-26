@@ -11,10 +11,8 @@ router.use('/post', postRouter)
 router.use('/summary', summaryRouter)
 
 router.get('/', verifyWebToken, async(req, res) => {
-    console.log('Received get request for wall post list.')
     try{
         const wallPostList = await WallPost.find({}, null, {sort: {likes: -1}})
-        console.log(wallPostList)
         res.send(wallPostList)
     }catch(err){
         console.log(err)

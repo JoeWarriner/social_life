@@ -32,10 +32,9 @@ async function create_user(username, password){
 
 
 router.post('/register', async(req,res) => {
-    console.log(req.body)
     if (validate_password(req.body.password) && (await unique_username(req.body.username))){
-        const user = await create_user(req.body.username, req.body.password)
         try {
+            const user = await create_user(req.body.username, req.body.password)
             const newUser = await user.save()
             res.send(newUser)
         }catch(err){
