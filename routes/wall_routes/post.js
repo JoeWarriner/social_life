@@ -13,8 +13,8 @@ router.use('/comment', commentRouter)
 router.use('/like', likeRouter)
 
 
-
 router.post('/',verifyWebToken, async(req, res) => {
+    /* Create new wall post */
     try {
         const wallPostData = new WallPost({
             owner:req.user,
@@ -30,6 +30,7 @@ router.post('/',verifyWebToken, async(req, res) => {
 
 
 router.get('/:postId',verifyWebToken, async(req, res) => {
+    /* Return details of specified wall post */
     try{
         const wallPost = await WallPost.findById(req.params.postId)
         res.send(wallPost)
@@ -41,17 +42,18 @@ router.get('/:postId',verifyWebToken, async(req, res) => {
 
 
 async function postBelongsToUser(postId, user_id){
-
+    /* Check whether wall post with postId is owned by user with userID */
     const post = await WallPost.findById(postId)
     if (post.owner != user_id ) {return false}
     return true
     
 }
 
+
 router.patch('/:postId', verifyWebToken, async(req, res) => {
+    /* Edit wall post text and/or title */
     try{
         if (!(await postBelongsToUser(req.params.postId, req.user._id))){
-            console.log('Accessed denied on patch request.')
             res.status(401).send('Access denied')
         }else{
         const updatePostbyID = await WallPost.updateOne(
@@ -71,6 +73,7 @@ router.patch('/:postId', verifyWebToken, async(req, res) => {
 
 
 router.delete('/:postId', verifyWebToken, async(req, res) => {
+    /* Delete wall post */
     try{
         if (!(await postBelongsToUser(req.params.postId, req.user._id))){
             res.status(401).send('Access denied')
@@ -83,8 +86,6 @@ router.delete('/:postId', verifyWebToken, async(req, res) => {
         res.status(400).send({message:err})
     }
 })
-
-
 
 
 

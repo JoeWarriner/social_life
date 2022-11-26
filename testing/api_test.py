@@ -6,20 +6,27 @@ from pathlib import Path
 import decouple
 import pymongo
 
+
+# Return error if not run from correct directory.
 try:
     config = decouple.Config(decouple.RepositoryEnv(Path.cwd().joinpath('.env')))
 except FileNotFoundError as error:
     print('ERROR: Test script needs to be run fom same directory as .env')
     raise error
 
+
+
+
+### SETUP UTILS FOR TESTING ###
+
+# Connect to mongodb
 client = pymongo.MongoClient(config.get('MONGO_DB_URL'))
 
+## API URLS:
 BASE_URL = 'http://localhost:3000/'
-
 ACCOUNT_URL = BASE_URL + 'account/'
 REGISTER_URL = ACCOUNT_URL + 'register'
 LOGIN_URL = ACCOUNT_URL + 'login'
-
 WALL_URL = BASE_URL + 'wall/'
 POST_URL = WALL_URL + 'post/'
 COMMENT_URL = POST_URL + 'comment/'
@@ -28,19 +35,24 @@ ENGAGEMENT_SUMMARY = WALL_URL + 'summary/engagement_summary'
 
 
 class User:
+    '''
+    Class to hold data for test users.
+
+    Allows us to pass around tokens, IDs, responses, etc. so we don't have 
+    to enter them manually each time.
+    '''
     id: str
     post_id: str
     token: str
-
     register_response: Response
     token_response: Response
     post_response: Response
     comment_response: Response
     like_response: Response
-
+    post_title: str
     post_text: str
+    comment: str
     post_id: str
-
 
     def __init__(self, username, password):
         self.username = username
@@ -57,6 +69,7 @@ def clear_db():
 
 @pytest.fixture
 def create_users(clear_db):
+    '''Create test users'''
     olga = User('olga01', 'olga_pass')
     nick = User('nick01', 'nick_pass')
     mary = User('mary01', 'mary_pass')
@@ -65,6 +78,7 @@ def create_users(clear_db):
 
 @pytest.fixture
 def register_users( create_users: tuple[User, User, User]):
+    '''Register the test users and store the http response'''
     users = create_users
     for user in users:
         response = requests.post(
@@ -80,6 +94,7 @@ def register_users( create_users: tuple[User, User, User]):
     
 @pytest.fixture
 def get_user_tokens(register_users: tuple[User, User, User]):
+    '''Get authorisation tokens for each user and store the http response.'''
     for user in register_users:
         response = requests.post(
             LOGIN_URL, 
@@ -95,6 +110,8 @@ def get_user_tokens(register_users: tuple[User, User, User]):
 
 @pytest.fixture
 def make_posts(get_user_tokens: tuple[User, User, User]):
+    '''Make a post for each of Olga, Mary and Nick. Store responses.'''
+
     olga, nick, mary = get_user_tokens
 
     olga.post_title = "Olga's post"
@@ -122,6 +139,8 @@ def make_posts(get_user_tokens: tuple[User, User, User]):
 
 @pytest.fixture
 def users_with_posts_and_comments(make_posts: tuple[User, User, User]):
+    '''Attempt to add comments to Mary's post for each user. Store responses.'''
+
     olga, nick, mary = make_posts
 
     nick.comment = 'Mary - why is this all in capitals?'
@@ -151,6 +170,7 @@ def users_with_posts_and_comments(make_posts: tuple[User, User, User]):
 
 @pytest.fixture
 def users_with_posts_comments_likes( users_with_posts_and_comments: tuple[User, User, User] ):
+    '''Attempt to like Mary's post for each user. Store responses.'''
     olga, nick, mary = users_with_posts_and_comments
     for user in nick, olga, mary:
         response = requests.post(
@@ -192,6 +212,9 @@ def test_tc3(get_user_tokens):
 
 
 def is_post_created(user: User):
+    '''
+    Check if a post has been created with all the right details for each user.
+    '''
     response = user.post_response 
     assert response.ok
     post = response.json()
@@ -333,17 +356,13 @@ def test_post_delete(make_posts: tuple[User, User, User]):
     response = requests.delete(
             f'{POST_URL}/{nick.post_id}',  
             headers = {'auth-token': nick.token}
-
-
         )
 
     assert response.ok
-
     get_response = requests.get(
             WALL_URL, 
             headers = {'auth-token': nick.token}
         )
-
     assert len(get_response.json()) == 2
 
 
@@ -409,6 +428,7 @@ def test_double_like(users_with_posts_comments_likes:tuple[User, User, User]):
 #### VALIDATION TEST ###
 
 def invalid_register_test(username, password):
+    '''Check if username and password is rejected as invalid'''
     response = requests.post(
                 REGISTER_URL, 
                 json = {

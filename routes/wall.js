@@ -11,6 +11,7 @@ router.use('/post', postRouter)
 router.use('/summary', summaryRouter)
 
 router.get('/', verifyWebToken, async(req, res) => {
+    /* Get all wall posts */
     try{
         const wallPostList = await WallPost.find({}, null, {sort: {likes: -1}})
         res.send(wallPostList)
