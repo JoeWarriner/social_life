@@ -5,12 +5,14 @@ const mongoose = require('mongoose')
 require('dotenv/config')
 
 const bodyParser = require('body-parser')
-const wallRouter = require('./routes/wall_post')
-const authRouter = require('./routes/auth')
-
 app.use(bodyParser.json())
-app.use('/wall_post', wallRouter)
-app.use('/auth', authRouter)
+
+
+const wallRouter = require('./routes/wall')
+const accountRouter = require('./routes/account')
+
+app.use('/wall', wallRouter)
+app.use('/account', accountRouter)
 
 app.get('/', (req, res) => {
     res.send('Hi there welcome to my app')

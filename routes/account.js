@@ -2,9 +2,10 @@ const express = require('express')
 const router = express.Router()
 
 const User = require('../models/User')
-
+const WallPost = require('../models/WallPost')
 const bcryptjs = require('bcryptjs')
 const jsonwebtoken = require('jsonwebtoken')
+const verifyWebToken = require('../verifyToken')
 
 
 function validate_password(password) {
@@ -46,23 +47,22 @@ router.post('/register', async(req,res) => {
 })
 
 
+
 router.post('/login', async(req,res) => {
-
     const user = await User.findOne({username:req.body.username})
-
     if (!user) {
         return res.status(400).send({'message': 'user does not exist'})
     }
-
     const passwordValid = await bcryptjs.compare(req.body.password, user.password)
-
     if (!passwordValid) {
         return res.status(400).send({'message': 'Incorrect password'})
     }
-
     const webToken = jsonwebtoken.sign({_id:user._id}, process.env.WEBTOKEN_SECRET)
     return res.header('auth_token',webToken).send({'auth_token':webToken})
 })
+
+
+
 
 module.exports = router
 

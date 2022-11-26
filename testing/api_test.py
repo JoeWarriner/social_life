@@ -15,13 +15,16 @@ except FileNotFoundError as error:
 client = pymongo.MongoClient(config.get('MONGO_DB_URL'))
 
 BASE_URL = 'http://localhost:3000/'
-REGISTER_URL = BASE_URL + 'auth/register'
-LOGIN_URL = BASE_URL + 'auth/login'
 
-BASIC_WALL_POST = BASE_URL + 'wall_post/'
-ADD_COMMENT = BASIC_WALL_POST + 'comment/'
-COMMENT_LIKE_SUMMARY = BASIC_WALL_POST + '/comment_like_summary'
-LIKE_POST = BASIC_WALL_POST + 'like/'
+ACCOUNT_URL = BASE_URL + 'account/'
+REGISTER_URL = ACCOUNT_URL + 'register'
+LOGIN_URL = ACCOUNT_URL + 'login'
+
+WALL_URL = BASE_URL + 'wall/'
+POST_URL = WALL_URL + 'post/'
+COMMENT_URL = POST_URL + 'comment/'
+LIKE_URL = POST_URL + 'like/'
+ENGAGEMENT_SUMMARY = WALL_URL + 'summary/engagement_summary'
 
 
 @pytest.fixture
@@ -67,14 +70,14 @@ class User:
 
     def call_api_no_token(self):
         response = requests.get(
-            BASIC_WALL_POST
+            WALL_URL
             )
         assert not response.ok
 
 
     def make_post(self, title, text, expected_response_ok = True):
         response = requests.post(
-            BASIC_WALL_POST,
+            POST_URL,
             json = {
                 'title': title,
                 'text': text
@@ -96,7 +99,7 @@ class User:
 
     def browse_posts(self, expected_order = []):
         response = requests.get(
-            BASIC_WALL_POST,
+            WALL_URL,
             headers = {'auth-token': self.token}
             )
         assert response.ok
@@ -106,7 +109,7 @@ class User:
     
     def add_comment(self, post_id, comment, expected_comment_number = None, expected_response_ok = True):
         response = requests.post(
-            ADD_COMMENT,
+            COMMENT_URL,
             json = {
                 'postId': post_id,
                 'comment' : comment
@@ -125,7 +128,7 @@ class User:
         
     def view_user_comments(self, expected_commenters):
         response = requests.get(
-            COMMENT_LIKE_SUMMARY,
+            ENGAGEMENT_SUMMARY,
             headers = {'auth-token': self.token}
         )
         assert response.ok
@@ -137,7 +140,7 @@ class User:
 
     def get_user_likes(self, expected_likes):
         response = requests.get(
-            COMMENT_LIKE_SUMMARY,
+            ENGAGEMENT_SUMMARY,
             headers = {'auth-token': self.token}
         )
         assert response.ok
@@ -146,7 +149,7 @@ class User:
         
     def like_post(self, post_id, expected_likes = None, expected_response_ok = True):
         response = requests.post(
-            LIKE_POST,
+            LIKE_URL,
             json = {
                 'postId':  post_id
             },
