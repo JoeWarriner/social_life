@@ -12,7 +12,7 @@ router.get('/engagement_summary', verifyWebToken, async(req, res) => {
         const wallPostList = await WallPost.find({owner: req.user._id})
         for (const post of wallPostList){
             comments_list = comments_list.concat(post.comments)
-            likes = likes + post.likes
+            likes = likes + post.likes.length
         }
 
         const engagementSummary = {

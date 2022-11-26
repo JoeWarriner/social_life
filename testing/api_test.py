@@ -11,8 +11,6 @@ try:
 except FileNotFoundError as error:
     print('ERROR: Test script needs to be run fom same directory as .env')
     raise error
-    
-    
 
 client = pymongo.MongoClient(config.get('MONGO_DB_URL'))
 
@@ -27,7 +25,6 @@ POST_URL = WALL_URL + 'post/'
 COMMENT_URL = POST_URL + 'comment/'
 LIKE_URL = POST_URL + 'like/'
 ENGAGEMENT_SUMMARY = WALL_URL + 'summary/engagement_summary'
-
 
 
 class User:
@@ -157,10 +154,7 @@ def users_with_posts_comments_likes( users_with_posts_and_comments: tuple[User, 
     olga, nick, mary = users_with_posts_and_comments
     for user in nick, olga, mary:
         response = requests.post(
-                LIKE_URL,
-                json = {
-                    'postId':  mary.post_id
-                },
+                f'{LIKE_URL}/{mary.post_id}',
                 headers = {'auth-token': user.token}
             )
         user.like_response = response
@@ -206,7 +200,7 @@ def is_post_created(user: User):
     assert post['owner'] == user.id
     assert post['timestamp'] is not None
     assert post['comments'] == []
-    assert post['likes'] == 0
+    assert len(post['likes']) == 0
 
 
 def test_tc4(make_posts: tuple[User, User, User]):
@@ -296,7 +290,7 @@ def test_tc12(users_with_posts_comments_likes: tuple[User, User, User]):
         response = user.like_response
         assert response.ok
         post = response.json()
-        assert post['likes'] == i + 1
+        assert len(post['likes']) == i + 1
 
         
 def test_tc13(users_with_posts_comments_likes: tuple[User, User, User]):
@@ -389,6 +383,26 @@ def test_post_edit(make_posts: tuple[User, User, User]):
     assert  get_response.json()['text'] == 'test'
     assert  get_response.json()['title'] == 'test'
 
+
+
+def test_double_like(users_with_posts_comments_likes:tuple[User, User, User]):
+    ''' Users should only be able to like a post once'''
+    _, nick, mary = users_with_posts_comments_likes
+
+    response = requests.post(
+            LIKE_URL,
+            json = {
+                'postId': mary.post_id,
+            },
+            headers = {'auth-token': nick.token}
+        )
+    assert not response.ok
+
+    get_response = requests.get(
+            f'{POST_URL}/{mary.post_id}',
+            headers = {'auth-token': nick.token}
+    )
+    assert len(get_response.json()['likes']) == 2
 
 
 
@@ -497,7 +511,6 @@ def test_validation_title_length_long(get_user_tokens: tuple[User, User, User]):
     assert not response.ok
 
 
-
 def test_validation_comment_length_short(make_posts:tuple[User, User, User]):
     ''' Comment must be greater than 0'''
     _, nick, mary = make_posts
@@ -530,5 +543,8 @@ def test_validation_comment_length_long(make_posts:tuple[User, User, User]):
             headers = {'auth-token': nick.token}
         )
     assert not response.ok
+
+
+
 
 

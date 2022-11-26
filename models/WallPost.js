@@ -30,10 +30,9 @@ const wallPostSchema = mongoose.Schema({
             maxLength: 256,
         }
     }],
-    likes: {
-        type:Number,
-        default:0
-    }
+    likes: [{
+        owner_id: String
+    }]
 })
 
 module.exports = mongoose.model('wall_posts', wallPostSchema)
