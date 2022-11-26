@@ -278,8 +278,8 @@ def test_validation_password_length(clear_db):
     test_user.register(ok_response_expected=False)
 
 def test_validation_username_length(clear_db):
-    '''Username must be less than 100 characters'''
-    test_user_1 = User('abcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxy', 'abcdefghi')
+    '''Username must be 100 characters or less'''
+    test_user_1 = User('abcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyz', 'abcdefghi')
     test_user_1.register(ok_response_expected=False)
 
 def test_validation_username_no_spaces(clear_db):

@@ -6,11 +6,17 @@ const User = require('../models/User')
 const bcryptjs = require('bcryptjs')
 const jsonwebtoken = require('jsonwebtoken')
 
+
 function validate_password(password) {
     if (password.length < 8){
         return false
     }
     return true
+}
+
+async function unique_username(username) {
+    const sameNameUsersList = await User.find({username: username})
+    return  sameNameUsersList.length == 0
 }
 
 async function create_user(username, password){
@@ -23,10 +29,10 @@ async function create_user(username, password){
     return user
 }
 
+
 router.post('/register', async(req,res) => {
-    
     console.log(req.body)
-    if ((validate_password(req.body.password))){
+    if (validate_password(req.body.password) && (await unique_username(req.body.username))){
         const user = await create_user(req.body.username, req.body.password)
         try {
             const newUser = await user.save()
@@ -37,9 +43,6 @@ router.post('/register', async(req,res) => {
     } else{
         res.status(400).send({message:'Invalid password'})
     }
-
-    
-
 })
 
 
