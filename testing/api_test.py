@@ -23,9 +23,12 @@ ADD_COMMENT = BASIC_WALL_POST + 'comment/'
 COMMENT_LIKE_SUMMARY = BASIC_WALL_POST + '/comment_like_summary'
 LIKE_POST = BASIC_WALL_POST + 'like/'
 
-# Clear database before each testing round:
-for collection in client.social_life.list_collection_names():
-    client.social_life.drop_collection(collection)
+
+@pytest.fixture
+def clear_db():
+    'Clear database before test'
+    for collection in client.social_life.list_collection_names():
+        client.social_life.drop_collection(collection)
 
 
 class User:
@@ -34,7 +37,7 @@ class User:
         self.username = username
         self.password = password
 
-    def register(self):
+    def register(self, ok_response_expected = True):
         response = requests.post(
             REGISTER_URL, 
             json = {
@@ -42,10 +45,13 @@ class User:
                 'password': self.password
             }
         )
-        assert response.ok
-        assert response.json()['username'] == self.username
-        assert response.json()['password'] != self.password
-        self.id = response.json()['_id']
+        if ok_response_expected:
+            assert response.ok
+            assert response.json()['username'] == self.username
+            assert response.json()['password'] != self.password
+            self.id = response.json()['_id']
+        if not ok_response_expected:
+            assert not response.ok
     
 
     def get_token(self):
@@ -66,7 +72,7 @@ class User:
         assert not response.ok
 
 
-    def make_post(self, title, text):
+    def make_post(self, title, text, expected_response_ok = True):
         response = requests.post(
             BASIC_WALL_POST,
             json = {
@@ -75,15 +81,18 @@ class User:
             },
             headers = {'auth-token': self.token}
             )
-        assert response.ok
-        post = response.json()
-        assert post['title'] == title
-        assert post['text'] == text
-        assert post['owner'] == self.id
-        assert post['timestamp'] is not None
-        assert post['comments'] == []
-        assert post['likes'] == 0
-        self.post_id = post['_id']
+        if expected_response_ok:
+            assert response.ok
+            post = response.json()
+            assert post['title'] == title
+            assert post['text'] == text
+            assert post['owner'] == self.id
+            assert post['timestamp'] is not None
+            assert post['comments'] == []
+            assert post['likes'] == 0
+            self.post_id = post['_id']
+        if not expected_response_ok:
+            assert not response.ok
 
     def browse_posts(self, expected_order = []):
         response = requests.get(
@@ -95,7 +104,7 @@ class User:
         titles = [post['title'] for post in posts]
         assert titles == expected_order
     
-    def add_comment(self, post_id, comment, expected_comment_number = None, access_expected = True):
+    def add_comment(self, post_id, comment, expected_comment_number = None, expected_response_ok = True):
         response = requests.post(
             ADD_COMMENT,
             json = {
@@ -104,13 +113,13 @@ class User:
             },
             headers = {'auth-token': self.token}
         )
-        if access_expected:
+        if expected_response_ok:
             assert response.ok
             updated_post = response.json()
             assert updated_post['_id'] == post_id
             assert updated_post['comments'][expected_comment_number]['comment'] == comment
             assert updated_post['comments'][expected_comment_number]['owner_id'] == self.id
-        if not access_expected:
+        if not expected_response_ok:
             assert not response.ok
         
         
@@ -135,7 +144,7 @@ class User:
         assert response.json()['likes'] == expected_likes
 
         
-    def like_post(self, post_id, expected_likes = None, access_expected = True):
+    def like_post(self, post_id, expected_likes = None, expected_response_ok = True):
         response = requests.post(
             LIKE_POST,
             json = {
@@ -143,7 +152,7 @@ class User:
             },
             headers = {'auth-token': self.token}
         )
-        if access_expected:
+        if expected_response_ok:
             assert response.ok
             post = response.json()
             assert post['likes'] == expected_likes
@@ -158,7 +167,7 @@ nick = User('nick01', 'nick_pass')
 mary = User('mary01', 'mary_pass')
 
 
-def test_tc1(): 
+def test_tc1(clear_db): 
     '''
     TC 1. Olga, Nick and Mary register in the application and access the API. 
     '''
@@ -220,12 +229,11 @@ def test_tc9():
     mary.add_comment(
         post_id = mary.post_id,
         comment = """ 
-            Actually I CAN reply because the idiot developing this app hasn't coded it in yet, 
-            despite the fact he's writing this test. He said something about "test driven development", 
-            but I think he's just procrastinating by writing stupid conversations between imaginary people.
+            Actually I CAN reply because the idiot developing this app hasn't coded it in yet. 
+            He said something about "test driven development", 
             """, 
             # Test passes - who looks stupid now Mary?
-        access_expected=False)
+        expected_response_ok=False)
 
 def test_tc10():
     """ Mary can see posts in a chronological order (newest posts are on the top as there are no likes yet). """
@@ -246,7 +254,7 @@ def test_tc12():
 
 def test_tc13():
     """ Mary likes her posts. This call should be unsuccessful; an owner cannot like their posts. """
-    mary.like_post(mary.post_id, access_expected=False)
+    mary.like_post(mary.post_id, expected_response_ok=False)
 
 
 def test_tc14():
@@ -258,3 +266,63 @@ def test_tc15():
     """ Nick can see the list of posts, since Mary's post has two likes it is shown at the top."""
     nick.browse_posts(expected_order=["Mary's post", "Olga's post","Nick's post" ])
 
+
+
+
+### Validation tests:
+
+
+def test_validation_password_length(clear_db):
+    '''Password must be at least 8 characters'''
+    test_user = User('test', 'abcefgh')
+    test_user.register(ok_response_expected=False)
+
+def test_validation_username_length(clear_db):
+    '''Username must be less than 100 characters'''
+    test_user_1 = User('abcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxy', 'abcdefghi')
+    test_user_1.register(ok_response_expected=False)
+
+def test_validation_username_no_spaces(clear_db):
+    '''Username cannot have spaces'''
+    test_user_1 = User('test username', 'abcdefghi')
+    test_user_1.register(ok_response_expected=False)
+
+def test_validation_username_unique(clear_db):
+    '''Username must be unique'''
+    test_user_1 = User('test', 'abcdefghi')
+    test_user_1.register(ok_response_expected=True)
+    test_user_2 = User('test', 'abcdefghi')
+    test_user_2.register(ok_response_expected=False)
+
+def test_validation_post_length(clear_db):
+    ''' Post must be greater than 0, less than 256 characters '''
+    test_user_1 = User('test', 'abcdefghi')
+    test_user_1.get_token()
+    test_user_1.make_post('', expected_response_ok=False)
+    test_user_1.make_post('''
+        This is a post that is too long because it is over 256 characters. 
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do ei
+        usmod tempor incididunt ut labore et dolore magna aliqua. Ut enim 
+        ad minim veniam, quis nostrud exercitation ullamco laboris
+        ''', expected_response_ok=False)
+
+def test_validation_comment_length(clear_db):
+    ''' Comment must be greater than 0, less than 256 characters '''
+
+    test_user_1 = User('test', 'abcdefghi')
+    test_user_1.get_token()
+    test_user_1.make_post('A test post')
+
+    test_user_2 = User('test2', 'abcdefghi')
+    test_user_2.get_token()
+    test_user_2.add_comment(test_user_1.post_id, '', expected_response_ok=False)
+
+    test_user_2.add_comment(test_user_1.post_id, '''
+        This is a post that is too long because it is over 256 characters. 
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do ei
+        usmod tempor incididunt ut labore et dolore magna aliqua. Ut enim 
+        ad minim veniam, quis nostrud exercitation ullamco laboris
+        ''', 
+        expected_response_ok=False)
+    
+    
