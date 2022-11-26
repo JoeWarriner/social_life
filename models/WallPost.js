@@ -7,7 +7,9 @@ const wallPostSchema = mongoose.Schema({
     },
     title: {
         type:String,
-        required:true
+        required:true,
+        minLength: 1,
+        maxLength: 128
     },
     text: {
         type:String,

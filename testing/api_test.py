@@ -306,6 +306,19 @@ def test_validation_post_length(clear_db):
         ad minim veniam, quis nostrud exercitation ullamco laboris dolor
         ''', expected_response_ok=False)
 
+def test_validation_post_title_length(clear_db):
+    ''' Post titles must be greater than 0, less than 128 characters '''
+    test_user_1 = User('test', 'abcdefghi')
+    test_user_1.register()
+    test_user_1.get_token()
+    test_user_1.make_post('', 'test', expected_response_ok=False)
+    test_user_1.make_post('''
+        This is a post title that is too long because it is over 128 characters. 
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do ei
+        ''', 'test', expected_response_ok=False)
+
+
+
 def test_validation_comment_length(clear_db):
     ''' Comment must be greater than 0, less than 256 characters '''
 
