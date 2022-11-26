@@ -6,24 +6,39 @@ const User = require('../models/User')
 const bcryptjs = require('bcryptjs')
 const jsonwebtoken = require('jsonwebtoken')
 
+function validate_password(password) {
+    if (password.length < 8){
+        return false
+    }
+    return true
+}
+
+async function create_user(username, password){
+    const salt = await bcryptjs.genSalt(5)
+    const hashedPassword = await bcryptjs.hash(password, salt)
+    const user = new User({
+        username : username,
+        password : hashedPassword
+    })
+    return user
+}
 
 router.post('/register', async(req,res) => {
     
-    // Validation stuff
     console.log(req.body)
-    const salt = await bcryptjs.genSalt(5)
-    const hashedPassword = await bcryptjs.hash(req.body.password, salt)
-
-    const user = new User({
-        username : req.body.username,
-        password : hashedPassword
-    })
-    try {
-        const newUser = await user.save()
-        res.send(newUser)
-    }catch(err){
-        res.send({message:err})
+    if ((validate_password(req.body.password))){
+        const user = await create_user(req.body.username, req.body.password)
+        try {
+            const newUser = await user.save()
+            res.send(newUser)
+        }catch(err){
+            res.status(400).send({message:err})
+        }
+    } else{
+        res.status(400).send({message:'Invalid password'})
     }
+
+    
 
 })
 
