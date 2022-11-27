@@ -1,6 +1,5 @@
 import pytest
 import requests
-from typing import Callable
 from requests import Response
 from pathlib import Path
 import decouple
