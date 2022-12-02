@@ -2,18 +2,15 @@
 
 TODO:
 Check validation in API reference.
-Do deployment and add deployment section.
-More detail on OAuth?
-More detail on API design? Caching.
 Proof read.
-Add description of secrets.
+Add references.
 
 
 ## 1. Overview
 Social life is a minimalist microblogging app with a REST API interface. Users can create accounts, post short updates to a ‘wall’, and view, comment on, and 'like' other users’ updates.
 
 ## 2. Implementation
-Social life is implemented in NodeJS using express, with a MongoDB database using Mongoose 3rd pary
+Social life is implemented in NodeJS using express, with a MongoDB database using Mongoose 3rd party library from NPM.
 
 ### 2.1 Models
 
@@ -89,9 +86,118 @@ Validation is fully documented in the full API reference in section 3.
 For the most part, authentication happens in the models using Mongoose’s validation syntax. For passwords this is not possible, as they are already hashed and salted by the time they reach the database, so the function validatePassword in account.js handles this instead, before hashing and salting takes place.
 
 
-### 2.6 Deployment
+### 2.6 Version Control
 
-Blah blah blah blah
+As I developed the app, I used github for version control. To do so I created an empty repo in GitHub, and used the following commands (I already had my login details set up in my global git config from previous projects):
+
+```BASH
+## To initialise the local repo:
+git init social_life
+
+## To connect to the remote repo:
+git remote add origin <repo url>
+
+## When commiting changes during development
+git add . 
+git commit -m '<commit message>'
+git push origin master
+```
+
+### 2.7 Deployment
+
+The app was deployed on a GCP VM using Docker. 
+
+#### 2.7.1 Setting up the VM and docker
+
+I set up a new VM instance, and used the browser based SSH terminal to deploy the app.
+
+I installed docker using apt-get:
+```BASH
+sudo apt-get update
+sudo apt-get install docker.io
+```
+
+I gave myself permissions to run docker as root without needing to use sudo:
+
+```BASH
+sudo usermod -aG sudo joewarriner40
+sudo usermod -aG docker joewarriner40
+```
+
+#### 2.7.2 Cloning the repo and creating a Dockerfile 
+Then I cloned the github repo, using a token generated on the github site:
+
+```BASH
+git clone --branch master https://<my git username>:<my git token>@<my git repo>
+```
+
+The --branch master argument would allow me to create additional feature branches and develop on them, while still being able to easily git fetch only the master branch from the production server.
+
+I didn't want to put my secrets file on github, so I had included the ```.env``` file in ```.gitignore```. I therefore manually added a ```.env``` file to the repo on the VM using ```nano .env```.
+
+Then I created a dockerfile in the repo, using ```nano Dockerfile``` with the following details:
+
+```Docker
+FROM alpine 
+RUN apk add --update nodejs npm 
+COPY . /src
+WORKDIR /src
+EXPOSE 3000
+ENTRYPOINT ["node", "./app.js"]
+```
+
+- ```FROM alpine``` uses the Alpine docker image, which is a lightweight Linux image (REFERENCE https://hub.docker.com/_/alpine )
+
+- ```RUN apk add --update nodejs npm ``` Installs nodejs and npm (node js package manager) in the container.
+
+- ```COPY . /src``` copies the contents of the directory containing the Dockerfile into a /src directory in the container.
+
+- ```WORKDIR /src``` sets that /src directory to be the working directory
+
+- ```EXPOSE 3000``` allows requests to port 3000 on the container (the one that the app is set to listen on)
+
+- ```ENTRYPOINT ["node", "./app.js"]``` contains the commands to run the app.
+
+
+#### 2.7.2 Running the container
+
+
+I  built an image from the dockerfile using:
+
+```BASH
+docker image build -t social-life-image:1 .
+```
+
+- ```docker image .``` is the main command. The ```.``` is a path argument, so will just use the current working directory (this was run from the repo directory on the vm).
+
+- ```-t social-life-image:1``` is an additional argument that allows us to give the image a name and version
+
+Finally, I ran the container:
+
+```BASH
+docker container run -d --name social-life --publish 80:3000 --log-driver=gcplogs  social-life-image:1
+```
+
+- ```docker container run social-life-image:1``` is the main command that runs a container based on the image.
+
+- ```-d``` sets the container to run in the background (i.e. without opening).
+
+ - ```--name social-life``` gives the container a name to allow us to more easily manage it.
+
+
+- ```--publish 80:3000``` sets up a connection between the port that the VM listens on (80) and the port the app is using in the container (3000).
+
+- ```--log-driver=gcplogs``` allows us to view logging from the app in the GCP console - invaluable for troubleshooting!
+
+
+I was then able to successfully run my tests using the python test script described below.
+
+
+
+
+
+
+
 
 ## 3. API Reference
 
@@ -204,7 +310,7 @@ All registered users.
 
 -----
 
-#### GET wall
+#### GET - wall
 
 Return all public wall posts.
 
@@ -380,6 +486,8 @@ Fixtures build upon one another to create an end-to-end programme flow:
 clear_db -> create_users -> register_users ->  get_user_tokens -> make_posts -> users_with_posts_and_comments -> users_with_posts_comments_likes
 
 Each test specifies a fixture in the function signature. This represents the point in the programme flow that test's assertions are made.
+
+The test script below is the version for testing locally. To test the cloud version, we simply change the BASE_URL constant to the IP address of the VM we are running on, and then run the test script again (from a local laptop). This produced the same result.
 
 
 ```python

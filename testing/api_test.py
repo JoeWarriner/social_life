@@ -22,7 +22,7 @@ except FileNotFoundError as error:
 client = pymongo.MongoClient(config.get('MONGO_DB_URL'))
 
 ## API URLS:
-BASE_URL = 'http://localhost:3000/'
+BASE_URL = 'http://146.148.92.23/'
 ACCOUNT_URL = BASE_URL + 'account/'
 REGISTER_URL = ACCOUNT_URL + 'register'
 LOGIN_URL = ACCOUNT_URL + 'login'

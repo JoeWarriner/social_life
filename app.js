@@ -2,8 +2,6 @@ const express = require('express')
 const app = express()
 
 
-
-
 const mongoose = require('mongoose')
 require('dotenv/config')
 
@@ -12,7 +10,7 @@ app.use(bodyParser.json())
 
 
 const wallRouter = require('./routes/wall')
-const accountRouter = require('./routes/account')
+const accountRouter = require('./   /account')
 
 app.use('/wall', wallRouter)
 app.use('/account', accountRouter)
