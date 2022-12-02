@@ -1,7 +1,6 @@
 # Social Life – Documentation
 
 TODO:
-Check validation in API reference.
 Proof read.
 Add references.
 
@@ -10,7 +9,7 @@ Add references.
 Social life is a minimalist microblogging app with a REST API interface. Users can create accounts, post short updates to a ‘wall’, and view, comment on, and 'like' other users’ updates.
 
 ## 2. Implementation
-Social life is implemented in NodeJS using express, with a MongoDB database using Mongoose 3rd party library from NPM.
+Social life is implemented in NodeJS using express, with a MongoDB database using Mongoose 3rd party library.
 
 ### 2.1 Models
 
@@ -18,6 +17,7 @@ Social life has a simple database structure based around two collections of reco
 
 #### 2.1.1 User:
 User records are very simple, containing only basic user details:
+
 ```JSON
 {
 _id: ObjectID,
@@ -101,7 +101,10 @@ git remote add origin <repo url>
 git add . 
 git commit -m '<commit message>'
 git push origin master
+
+# (Git 2022) 
 ```
+
 
 ### 2.7 Deployment
 
@@ -115,6 +118,8 @@ I installed docker using apt-get:
 ```BASH
 sudo apt-get update
 sudo apt-get install docker.io
+
+# (Docker 2022f) 
 ```
 
 I gave myself permissions to run docker as root without needing to use sudo:
@@ -122,6 +127,8 @@ I gave myself permissions to run docker as root without needing to use sudo:
 ```BASH
 sudo usermod -aG sudo joewarriner40
 sudo usermod -aG docker joewarriner40
+
+# (Die.net 2022)
 ```
 
 #### 2.7.2 Cloning the repo and creating a Dockerfile 
@@ -129,6 +136,8 @@ Then I cloned the github repo, using a token generated on the github site:
 
 ```BASH
 git clone --branch master https://<my git username>:<my git token>@<my git repo>
+
+# (Git 2022)
 ```
 
 The --branch master argument would allow me to create additional feature branches and develop on them, while still being able to easily git fetch only the master branch from the production server.
@@ -144,9 +153,11 @@ COPY . /src
 WORKDIR /src
 EXPOSE 3000
 ENTRYPOINT ["node", "./app.js"]
+
+# (Docker 2022d)
 ```
 
-- ```FROM alpine``` uses the Alpine docker image, which is a lightweight Linux image (REFERENCE https://hub.docker.com/_/alpine )
+- ```FROM alpine``` uses the Alpine docker image, which is a lightweight Linux image (Docker 2022a)
 
 - ```RUN apk add --update nodejs npm ``` Installs nodejs and npm (node js package manager) in the container.
 
@@ -166,6 +177,8 @@ I  built an image from the dockerfile using:
 
 ```BASH
 docker image build -t social-life-image:1 .
+
+# (Docker 2022b)
 ```
 
 - ```docker image .``` is the main command. The ```.``` is a path argument, so will just use the current working directory (this was run from the repo directory on the vm).
@@ -176,6 +189,8 @@ Finally, I ran the container:
 
 ```BASH
 docker container run -d --name social-life --publish 80:3000 --log-driver=gcplogs  social-life-image:1
+
+# (Docker 2022c)
 ```
 
 - ```docker container run social-life-image:1``` is the main command that runs a container based on the image.
@@ -185,9 +200,9 @@ docker container run -d --name social-life --publish 80:3000 --log-driver=gcplog
  - ```--name social-life``` gives the container a name to allow us to more easily manage it.
 
 
-- ```--publish 80:3000``` sets up a connection between the port that the VM listens on (80) and the port the app is using in the container (3000).
+- ```--publish 80:3000``` sets up a connection between the port that the VM listens on (80) and the port the app is using in the container (3000). 
 
-- ```--log-driver=gcplogs``` allows us to view logging from the app in the GCP console - invaluable for troubleshooting!
+- ```--log-driver=gcplogs``` allows us to view logging from the app in the GCP console - invaluable for troubleshooting!  (Docker 2022)
 
 
 I was then able to successfully run my tests using the python test script described below.
@@ -477,7 +492,7 @@ None
 
 The following python script tests the 15 predefined test cases for the application.
 
-Testing follows the pytest approach of: Arrange, Act, Assert, Cleanup.  The "Assert" step is for each test case is handled in test functions,  with the format **test_tcXX**, where XX is the numbers 1 - 15. 
+Testing follows the pytest approach of: Arrange, Act, Assert, Cleanup (pytest 2020).  The "Assert" step is for each test case is handled in test functions,  with the format **test_tcXX**, where XX is the numbers 1 - 15. 
 
 The remaining Arrange, Act, Cleanup steps are handled by 'fixtures' which are shared between the test functions. In general, fixtures call the API and pass the response to tests to make assertions, while also storing certain parts of the response (e.g. tokens). 
 
@@ -839,3 +854,17 @@ def test_tc15(users_with_posts_comments_likes: tuple[User, User, User]):
     assert titles == ["Mary's post" , "Olga's post","Nick's post" ]
 
 ```
+
+
+## 5. References
+
+
+Die.net (2022) usermod(8) - Linux man page. Accessed at: https://linux.die.net/man/8/usermod, 02/12/2022.
+Docker (2022a) Alpine: docker official image. Accessed at: https://hub.docker.com/_/alpine, 02/12/2022.
+Docker (2022b) Docker image build. Accessed at: https://docs.docker.com/engine/reference/commandline/image_build/, 02/12/2022.
+Docker (2022c) Docker Run. Accessed at: https://docs.docker.com/engine/reference/commandline/run/, 02/12/2022.
+Docker (2022d) Dockerfile reference. Accessed at: https://docs.docker.com/engine/reference/builder/, 02/12/2022.
+Docker (2022e) Google Cloud Logging driver. Accessed at: https://docs.docker.com/config/containers/logging/gcplogs/, 02/12/2022.
+Docker (2022f) Install Docker Engine on Ubuntu. Accessed at: https://docs.docker.com/engine/install/ubuntu/, 02/12/2022.
+Git (2022) Documentation. Accessed at: https://git-scm.com/doc, 02/12/2022
+pytest (2020) pytest fixtures: explicit, modular, scalable. Accessed at: https://docs.pytest.org/en/6.2.x/fixture.html, 02/12/2022.
