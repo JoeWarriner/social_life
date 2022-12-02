@@ -6,6 +6,7 @@ Do deployment and add deployment section.
 More detail on OAuth?
 More detail on API design? Caching.
 Proof read.
+Add description of secrets.
 
 
 ## 1. Overview
