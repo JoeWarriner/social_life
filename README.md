@@ -1,6 +1,11 @@
+- "Social media app" API written in NodeJS for a university coursework project.
+- Automated tests written in python.
+- Oauth2 for authentication.
+- Includes dockerfile.
+
 # Social Life – Documentation
 
-** Note - this was a university coursework project that had fairly inflexible requirements for the documenation element of it. The documentation is therefore a little "tickboxy" **
+** Note - this was a university coursework project that had fairly inflexible requirements for the documentation element of it. The documentation is therefore a little "tickboxy" **
 
 ## 1. Overview
 Social life is a minimalist microblogging app with a REST API interface. Users can create accounts, post short updates to a ‘wall’, and view, comment on, and 'like' other users’ updates.
