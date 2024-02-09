@@ -1,9 +1,11 @@
+# Social Life
+
 - "Social media app" API written in NodeJS for a university coursework project.
 - Automated tests written in python.
 - Oauth2 for authentication.
 - Includes dockerfile.
 
-# Social Life – Documentation
+# Documentation
 
 ** Note - this was a university coursework project that had fairly inflexible requirements for the documentation element of it. The documentation is therefore a little "tickboxy" **
 
